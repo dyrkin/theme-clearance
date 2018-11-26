@@ -13,6 +13,12 @@ function _git_is_dirty
   echo (command git status -s --ignore-submodules=dirty ^/dev/null)
 end
 
+function _remote_hostname
+  if test -n "$SSH_CONNECTION"
+    echo "ssh"
+  end
+end
+
 function fish_prompt
   set -l last_status $status
 
@@ -57,5 +63,5 @@ function fish_prompt
 
   # Terminate with a nice prompt char
   echo -e ''
-  echo -e -n -s $prompt_color '⟩ ' $normal
+  echo -e -n -s (_remote_hostname) ' ' $prompt_color '⟩ ' $normal
 end
