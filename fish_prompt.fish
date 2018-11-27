@@ -5,6 +5,9 @@
 # - Current directory name
 # - Git branch and dirty state (if inside a git repo)
 
+  set -x git_ahead_glyph      \u2191 # '↑'
+  set -x git_behind_glyph     \u2193 # '↓'
+
 function _git_branch_name
     echo (command git symbolic-ref HEAD ^/dev/null | sed -e 's|^refs/heads/||')
 end
@@ -15,7 +18,27 @@ end
 
 function _remote_hostname
     if test -n "$SSH_CONNECTION"
-        echo "ssh"
+        echo "ssh "
+    end
+end
+
+function __git_ahead_verbose -S -d 'Print a more verbose ahead/behind state for the current branch'
+    set -l commits (command git rev-list --left-right '@{upstream}...HEAD' 2>/dev/null)
+    or return
+
+    set -l behind (count (for arg in $commits; echo $arg; end | command grep '^<'))
+    set -l ahead (count (for arg in $commits; echo $arg; end | command grep -v '^<'))
+
+    switch "$ahead $behind"
+        case '' # no upstream
+        case '0 0' # equal to upstream
+            return
+        case '* 0' # ahead of upstream
+            echo "$git_ahead_glyph$ahead"
+        case '0 *' # behind upstream
+            echo "$git_behind_glyph$behind"
+        case '*' # diverged from upstream
+            echo "$git_ahead_glyph$ahead$git_behind_glyph$behind"
     end
 end
 
@@ -53,7 +76,7 @@ function fish_prompt
         else
             set git_info '(' $green $git_branch $normal ')'
         end
-        echo -n -s ' · ' $git_info $normal
+        echo -n -s ' · ' $git_info $normal (__git_ahead_verbose)
     end
 
     set -l prompt_color $red
@@ -63,5 +86,5 @@ function fish_prompt
 
     # Terminate with a nice prompt char
     echo -e ''
-    echo -e -n -s (_remote_hostname) ' ' $prompt_color '⟩ ' $normal
+    echo -e -n -s (_remote_hostname) $prompt_color '⟩ ' $normal
 end
