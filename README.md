@@ -7,3 +7,5 @@ A minimalist [fish shell](http://fishshell.com/) theme for people who use git
 ## Like it?
 
 Check out other versions of this theme for OSX Terminal or VIM!
+
+
