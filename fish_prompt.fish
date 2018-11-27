@@ -88,17 +88,18 @@ function fish_prompt
     echo -n -s $cwd $normal
 
     # Show git branch and status
-    set -l staged (command git diff --cached --no-ext-diff --quiet --exit-code 2>/dev/null; or echo -n "$git_staged_glyph")
-    set -l stashed (command git rev-parse --verify --quiet refs/stash >/dev/null; and echo -n "$git_stashed_glyph")
-    set -l untracked (__git_untracked)
-    set -l ahead (__git_ahead_verbose)
-    set -l dirty (_git_is_dirty)
-
-    #$staged $stashed $untracked
 
     set -l git_branch (_git_branch_name)
 
     if [ "$git_branch" ]
+        set -l staged (command git diff --cached --no-ext-diff --quiet --exit-code 2>/dev/null; or echo -n "$git_staged_glyph")
+        set -l stashed (command git rev-parse --verify --quiet refs/stash >/dev/null; and echo -n "$git_stashed_glyph")
+        set -l untracked (__git_untracked)
+        set -l ahead (__git_ahead_verbose)
+        set -l dirty (_git_is_dirty)
+
+        #$staged $stashed $untracked
+        
         if [ "$dirty" ]
             set git_info '(' $yellow $git_branch "±" $normal ')'
         else
