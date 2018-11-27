@@ -5,8 +5,20 @@
 # - Current directory name
 # - Git branch and dirty state (if inside a git repo)
 
+#glyphs
 set -x git_ahead_glyph \u2191 # '↑'
 set -x git_behind_glyph \u2193 # '↓'
+set -x git_staged_glyph '~'
+set -x git_stashed_glyph '$'
+set -x git_untracked_glyph '…'
+
+#colors
+set -x cyan (set_color cyan)
+set -x yellow (set_color yellow)
+set -x red (set_color red)
+set -x blue (set_color blue)
+set -x green (set_color green)
+set -x normal (set_color normal)
 
 function _git_branch_name
     echo (command git symbolic-ref HEAD ^/dev/null | sed -e 's|^refs/heads/||')
@@ -45,15 +57,20 @@ function __git_ahead_verbose -S -d 'Print a more verbose ahead/behind state for 
     end
 end
 
+function __git_untracked
+    set -l show_untracked (command git config --bool bash.showUntrackedFiles 2>/dev/null)
+    if [ "$show_untracked" != 'false' ]
+        set -l new (command git ls-files --other --exclude-standard --directory --no-empty-directory 2>/dev/null)
+        if [ "$new" ]
+            echo "$git_untracked_glyph"
+        else
+            return
+        end
+    end
+end
+
 function fish_prompt
     set -l last_status $status
-
-    set -l cyan (set_color cyan)
-    set -l yellow (set_color yellow)
-    set -l red (set_color red)
-    set -l blue (set_color blue)
-    set -l green (set_color green)
-    set -l normal (set_color normal)
 
     set -l cwd $blue(pwd | sed "s:^$HOME:~:")
 
@@ -71,7 +88,15 @@ function fish_prompt
     echo -n -s $cwd $normal
 
     # Show git branch and status
-    if [ (_git_branch_name) ]
+    set -l staged (command git diff --cached --no-ext-diff --quiet --exit-code 2>/dev/null; or echo -n "$git_staged_glyph")
+    set -l stashed (command git rev-parse --verify --quiet refs/stash >/dev/null; and echo -n "$git_stashed_glyph")
+    set -l untracked (__git_untracked)
+    set -l ahead (__git_ahead_verbose)
+    set -l dirty (_git_is_dirty)
+
+    #$staged $stashed $untracked
+
+    if [ "$dirty" ]
         set -l git_branch (_git_branch_name)
 
         if [ (_git_is_dirty) ]
@@ -79,7 +104,7 @@ function fish_prompt
         else
             set git_info '(' $green $git_branch $normal ')'
         end
-        echo -n -s ' · ' $git_info $normal (__git_ahead_verbose)
+        echo -n -s ' · ' $git_info $normal $ahead
     end
 
     set -l prompt_color $red
