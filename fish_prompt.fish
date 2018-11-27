@@ -96,16 +96,14 @@ function fish_prompt
 
     #$staged $stashed $untracked
 
-    if [ "$dirty" ]
-        set -l git_branch (_git_branch_name)
+    set -l git_branch (_git_branch_name)
 
-        if [ (_git_is_dirty) ]
-            set git_info '(' $yellow $git_branch "±" $normal ')'
-        else
-            set git_info '(' $green $git_branch $normal ')'
-        end
-        echo -n -s ' · ' $git_info $normal $ahead
+    if [ "$dirty" ]
+        set git_info '(' $yellow $git_branch "±" $normal ')'
+    else
+        set git_info '(' $green $git_branch $normal ')'
     end
+    echo -n -s ' · ' $git_info $normal "$ahead"
 
     set -l prompt_color $red
     if test $last_status = 0
