@@ -47,7 +47,7 @@ function git::ahead -S -d 'Print a more verbose ahead/behind state for the curre
         case '0' # equal to upstream
             return
         case '*' # ahead of upstream
-            echo "[$ahead_msg$normal]"
+            echo "$ahead_msg$normal"
     end
 end
 
@@ -64,7 +64,7 @@ function git::behind -S -d 'Print a more verbose ahead/behind state for the curr
         case '0' # equal to upstream
             return
         case '*' # behind upstream
-            echo "[$behind_msg$normal]"
+            echo "$behind_msg$normal"
     end
 end
 
@@ -95,25 +95,24 @@ function git::git
     set -l ahead (git::ahead)
     set -l behind (git::behind)
 
+    # if [ "$staged" ]
+    #     set ret_val "$ret_val$staged|"
+    # end
 
-    if [ "$staged" ]
-        set ret_val "$ret_val$staged|"
-    end
+    # if [ "$stashed" ]
+    #     set ret_val "$ret_val$stashed|"
+    # end
 
-    if [ "$stashed" ]
-        set ret_val "$ret_val$stashed|"
-    end
-
-    if [ "$untracked" ]
-        set ret_val "$ret_val$untracked|"
-    end
+    # if [ "$untracked" ]
+    #     set ret_val "$ret_val$untracked|"
+    # end
 
     if [ "$ahead" ]
         set ret_val "$ret_val$ahead|"
     end
 
     if [ "$behind" ]
-        set ret_val "$ret_val$ahead|"
+        set ret_val "$ret_val$behind|"
     end
 
     set ret_val (string trim -r -c "|" "$ret_val")
@@ -152,7 +151,7 @@ function fish_prompt
         else
             set git_info '(' $green $git_branch $normal ')'
         end
-        echo -n -s ' · ' $git_info $normal
+        echo -n -s ' · ' $git_info (git::git) $normal
 
         set -l prompt_color $red
         if test $last_status = 0
@@ -165,8 +164,4 @@ function fish_prompt
     # Terminate with a nice prompt char
     echo -e ''
     echo -e -n -s $normal $ssh_label $prompt_color '⟩ ' $normal
-end
-
-function fish_right_prompt
-    echo (git::git)
 end
