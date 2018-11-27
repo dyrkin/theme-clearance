@@ -5,8 +5,8 @@
 # - Current directory name
 # - Git branch and dirty state (if inside a git repo)
 
-  set -x git_ahead_glyph      \u2191 # '↑'
-  set -x git_behind_glyph     \u2193 # '↓'
+set -x git_ahead_glyph \u2191 # '↑'
+set -x git_behind_glyph \u2193 # '↓'
 
 function _git_branch_name
     echo (command git symbolic-ref HEAD ^/dev/null | sed -e 's|^refs/heads/||')
@@ -29,16 +29,19 @@ function __git_ahead_verbose -S -d 'Print a more verbose ahead/behind state for 
     set -l behind (count (for arg in $commits; echo $arg; end | command grep '^<'))
     set -l ahead (count (for arg in $commits; echo $arg; end | command grep -v '^<'))
 
+    set -l ahead_msg (echo $red"$git_ahead_glyph$ahead")
+    set -l behind_msg (echo $green"$git_behind_glyph$behind")
+
     switch "$ahead $behind"
         case '' # no upstream
         case '0 0' # equal to upstream
             return
         case '* 0' # ahead of upstream
-            echo "$git_ahead_glyph$ahead"
+            echo "[$ahead_msg$normal]"
         case '0 *' # behind upstream
-            echo "$git_behind_glyph$behind"
+            echo "[$behind_msg$normal]"
         case '*' # diverged from upstream
-            echo "$git_ahead_glyph$ahead$git_behind_glyph$behind"
+            echo "[$ahead_msg$behind_msg$normal]"
     end
 end
 
